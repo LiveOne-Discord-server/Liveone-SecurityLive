@@ -1,26 +1,41 @@
-import DiscordSwift
+import DiscordBM
+import Foundation
 import PHP
-import Go
+import GO
 
-let bot = DiscordBot(token: "YOUR_BOT_TOKEN")
+let bot = DiscordBotGatewayManager(eventLoopGroup: MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount),
+                                   token: "Mydickman))")
 
-let badWords = ["badword1", "badword2",...]
-let adsList = ["ad1", "ad2",...]
+let badWords = ["badword1", "suka(rus, eng, deepLapi)", "..."]
+let adsList = ["*link*", "youtube//", "..."]
 
-func analyzeMessage(message: Message) {
-    if badWords.contains(message.content) || adsList.contains(message.content) {
-        bot.banUser(userID: message.author.id, reason: "Bad words or ads")
-
-        let php = PHP()
-        php.post(url: "https://discord.com/api/reports", data: ["user_id": message.author.id, "reason": "Bad words or ads"])
-        
-        let go = Go()
-        go.post(url: "https://discord.com/api/reports", data: ["user_id": message.author.id, "reason": "Bad words or ads"])
+func analyzeMessage(_ message: Message) {
+    let content = message.content.lowercased()
+    if badWords.contains(where: content.contains) || adsList.contains(where: content.contains) {
+        Task {
+            do {
+                try await bot.banMember(userID: message.author.id, guildID: message.guildID!, reason: "Bad words or ads")
+                
+                let url = URL(string: "https://discord.com/api/v10/reports")!
+                var request = URLRequest(url: url)
+                request.httpMethod = "POST"
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                let body: [String: Any] = ["user_id": message.author.id, "reason": "Bad words or ads"]
+                request.httpBody = try JSONSerialization.data(withJSONObject: body)
+                
+                let (_, _) = try await URLSession.shared.data(for: request)
+            } catch {
+                print("Error: \(error)")
+                print("Warning: \(pizdez)")
+            }
+        }
     }
 }
 
-bot.onMessageCreate = { message in
-    analyzeMessage(message: message)
+bot.connect()
+
+bot.on(DiscordBM.Message.self) { message in
+    analyzeMessage(message)
 }
 
-bot.run()
+RunLoop.main.run()

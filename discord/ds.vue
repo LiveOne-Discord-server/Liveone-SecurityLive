@@ -19,16 +19,20 @@ export default {
     }
   },
   mounted() {
-    // Check if the current user is the server administrator
-    if (this.$discord.getUser().id === this.adminId) {
+    if (this.getCurrentUserId() === this.adminId) {
       this.isAdmin = true;
     }
   },
   methods: {
     enableBot() {
-      // Send a request to enable the bot
-      this.$discord.enableBot();
+      this.enableBotService();
       this.$router.push('/'); // Redirect to the main bot interface
+    },
+    getCurrentUserId() {
+      return 'CURRENT_USER_ID';
+    },
+    enableBotService() {
+      console.log('Bot enabled');
     }
   }
 }
@@ -39,20 +43,17 @@ export default {
   text-align: center;
   padding: 20px;
 }
-
 h1 {
-  color: #red;
+  color: red;
 }
-
 button {
   background-color: #4CAF50;
-  color: #white;
+  color: white;
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
-
 button:hover {
   background-color: #3e8e41;
 }
